@@ -23,7 +23,7 @@ struct _HevRcastTempSession
 
 	int ref_count;
 
-	HevRcastBaseSessionCloseNotify notify;
+	HevRcastBaseSessionNotify notify;
 	void *notify_data;
 };
 
@@ -31,7 +31,7 @@ static void hev_rcast_task_entry (void *data);
 
 HevRcastTempSession *
 hev_rcast_temp_session_new (int fd,
-			HevRcastBaseSessionCloseNotify notify, void *data)
+			HevRcastBaseSessionNotify notify, void *data)
 {
 	HevRcastTempSession *self;
 
@@ -102,9 +102,9 @@ hev_rcast_task_entry (void *data)
 	HevRcastMessage msg;
 	size_t msg_len;
 	ssize_t len;
-	HevRcastBaseSessionCloseNotifyAction action;
+	HevRcastBaseSessionNotifyAction action;
 
-	action = HEV_RCAST_BASE_SESSION_CLOSE_NOTIFY_FREE;
+	action = HEV_RCAST_BASE_SESSION_NOTIFY_FREE;
 
 	hev_task_add_fd (task, self->base.fd, EPOLLIN);
 
@@ -119,10 +119,10 @@ hev_rcast_task_entry (void *data)
 
 	switch (msg.login.direction) {
 	case HEV_RCAST_MESSAGE_LOGIN_INPUT:
-		action = HEV_RCAST_BASE_SESSION_CLOSE_NOTIFY_TO_INPUT;
+		action = HEV_RCAST_BASE_SESSION_NOTIFY_TO_INPUT;
 		break;
 	case HEV_RCAST_MESSAGE_LOGIN_OUTPUT:
-		action = HEV_RCAST_BASE_SESSION_CLOSE_NOTIFY_TO_OUTPUT;
+		action = HEV_RCAST_BASE_SESSION_NOTIFY_TO_OUTPUT;
 		break;
 	default:
 		break;

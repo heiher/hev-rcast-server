@@ -15,7 +15,7 @@
 typedef struct _HevRcastTempSession HevRcastTempSession;
 
 HevRcastTempSession * hev_rcast_temp_session_new (int fd,
-			HevRcastBaseSessionCloseNotify notify, void *data);
+			HevRcastBaseSessionNotify notify, void *data);
 
 HevRcastTempSession * hev_rcast_temp_session_ref (HevRcastTempSession *self);
 void hev_rcast_temp_session_unref (HevRcastTempSession *self);
