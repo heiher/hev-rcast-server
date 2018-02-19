@@ -389,6 +389,15 @@ temp_session_notify_handler (HevRcastBaseSession *session,
 		if (s) {
 			session_manager_insert_session (&self->output_sessions, (HevRcastBaseSession *) s);
 			hev_rcast_output_session_run (s);
+			if (self->input_session) {
+				HevRcastInputSession *is;
+				HevRcastBuffer *buffer;
+
+				is = (HevRcastInputSession *) self->input_session;
+				buffer = hev_rcast_input_session_get_buffer (is, 1);
+				if (buffer)
+					hev_rcast_output_session_push_buffer (s, buffer);
+			}
 		} else {
 			close (session->fd);
 		}
