@@ -14,6 +14,9 @@
 
 #include "hev-main.h"
 #include "hev-config.h"
+#include "hev-rcast-server.h"
+
+static HevRcastServer *server;
 
 static void
 show_help (const char *self_path)
@@ -41,11 +44,18 @@ main (int argc, char *argv[])
 		return -1;
 	}
 
+	server = hev_rcast_server_new ();
+	if (!server) {
+		return -1;
+	}
+
 	signal (SIGPIPE, SIG_IGN);
 	signal (SIGINT, signal_handler);
 
+	hev_rcast_server_run (server);
 	hev_task_system_run ();
 
+	hev_rcast_server_destroy (server);
 	hev_task_system_fini ();
 
 	return 0;
@@ -54,5 +64,6 @@ main (int argc, char *argv[])
 void
 quit (void)
 {
+	hev_rcast_server_quit (server);
 }
 
