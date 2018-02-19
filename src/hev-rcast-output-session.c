@@ -60,6 +60,7 @@ hev_rcast_output_session_new (int fd,
 	self->base.fd = fd;
 
 	self->ref_count = 1;
+	self->skip_ref_buffer = 1;
 	self->notify = notify;
 	self->notify_data = data;
 
