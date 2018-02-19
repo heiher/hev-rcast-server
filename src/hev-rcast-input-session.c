@@ -82,6 +82,14 @@ hev_rcast_input_session_unref (HevRcastInputSession *self)
 	if (self->ref_count)
 		return;
 
+	if (self->buffer_cfg)
+		hev_rcast_buffer_unref (self->buffer_cfg);
+
+	for (; self->buffers_r != self->buffers_w;) {
+		hev_rcast_buffer_unref (self->buffers[self->buffers_r]);
+		self->buffers_r = (self->buffers_r + 1) % BUFFERS_COUNT;
+	}
+
 	hev_free (self);
 }
 
