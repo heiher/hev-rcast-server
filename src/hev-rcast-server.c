@@ -246,6 +246,35 @@ hev_rcast_task_listen_entry (void *data)
 static void
 hev_rcast_task_dispatch_entry (void *data)
 {
+	HevRcastServer *self = data;
+
+	for (; !self->quit;) {
+		HevRcastInputSession *input_session;
+		HevRcastBuffer *buffer;
+		HevRcastBaseSession *session;
+
+		if (!self->input_session) {
+			hev_task_yield (HEV_TASK_WAITIO);
+			continue;
+		}
+		input_session = (HevRcastInputSession *) self->input_session;
+
+		buffer = hev_rcast_input_session_get_buffer (input_session, 0);
+		if (!buffer) {
+			hev_task_yield (HEV_TASK_WAITIO);
+			continue;
+		}
+
+		for (session=self->output_sessions; session; session=session->next) {
+			HevRcastOutputSession *s = (HevRcastOutputSession *) session;
+
+			hev_rcast_buffer_ref (buffer);
+			hev_rcast_output_session_push_buffer (s, buffer);
+		}
+
+		hev_rcast_buffer_unref (buffer);
+		hev_task_yield (HEV_TASK_YIELD);
+	}
 }
 
 static void
