@@ -105,12 +105,13 @@ hev_rcast_output_session_push_buffer (HevRcastOutputSession *self,
 		unsigned char type;
 
 		type = hev_rcast_buffer_get_type (buffer);
-		if (HEV_RCAST_MESSAGE_REF_FRAME == type) {
+		switch (type) {
+		case HEV_RCAST_MESSAGE_REF_FRAME:
 			hev_rcast_buffer_unref (buffer);
 			return;
+		case HEV_RCAST_MESSAGE_KEY_FRAME:
+			self->skip_ref_buffer = 0;
 		}
-
-		self->skip_ref_buffer = 0;
 	}
 
 	next_w = (self->buffers_w + 1) % BUFFERS_COUNT;
