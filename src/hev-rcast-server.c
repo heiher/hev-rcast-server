@@ -169,22 +169,16 @@ hev_rcast_server_quit (HevRcastServer *self)
 	hev_task_wakeup (self->task_session_manager);
 
 	/* input session */
-	if (self->input_session) {
-		self->input_session->hp = 0;
-		hev_task_wakeup (self->input_session->task);
-	}
+	if (self->input_session)
+		hev_rcast_base_session_quit (self->input_session);
 
 	/* temp sessions */
-	for (session=self->temp_sessions; session; session=session->next) {
-		session->hp = 0;
-		hev_task_wakeup (session->task);
-	}
+	for (session=self->temp_sessions; session; session=session->next)
+		hev_rcast_base_session_quit (session);
 
 	/* output sessions */
-	for (session=self->output_sessions; session; session=session->next) {
-		session->hp = 0;
-		hev_task_wakeup (session->task);
-	}
+	for (session=self->output_sessions; session; session=session->next)
+		hev_rcast_base_session_quit (session);
 }
 
 static int
@@ -263,15 +257,8 @@ hev_rcast_task_session_manager_entry (void *data)
 		/* input session */
 		if (self->input_session) {
 			self->input_session->hp --;
-			if (self->input_session->hp == 0) {
-				/* wakeup session's task to do destroy */
-				hev_task_wakeup (self->input_session->task);
-#ifdef _DEBUG
-				printf ("Wakeup session %p's task %p\n",
-							self->input_session,
-							self->input_session->task);
-#endif
-			}
+			if (self->input_session->hp == 0)
+				hev_rcast_base_session_quit (self->input_session);
 		}
 		hev_task_yield (HEV_TASK_YIELD);
 
@@ -287,11 +274,7 @@ hev_rcast_task_session_manager_entry (void *data)
 			if (session->hp > 0)
 				continue;
 
-			/* wakeup session's task to do destroy */
-			hev_task_wakeup (session->task);
-#ifdef _DEBUG
-			printf ("Wakeup session %p's task %p\n", session, session->task);
-#endif
+			hev_rcast_base_session_quit (session);
 		}
 		hev_task_yield (HEV_TASK_YIELD);
 
@@ -307,11 +290,7 @@ hev_rcast_task_session_manager_entry (void *data)
 			if (session->hp > 0)
 				continue;
 
-			/* wakeup session's task to do destroy */
-			hev_task_wakeup (session->task);
-#ifdef _DEBUG
-			printf ("Wakeup session %p's task %p\n", session, session->task);
-#endif
+			hev_rcast_base_session_quit (session);
 		}
 	}
 }
