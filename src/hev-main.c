@@ -39,6 +39,10 @@ main (int argc, char *argv[])
 		return -1;
 	}
 
+	if (0 < hev_config_init (argv[1])) {
+		return -1;
+	}
+
 	if (-1 == hev_task_system_init ()) {
 		fprintf (stderr, "Initialize task system failed!\n");
 		return -1;
@@ -57,6 +61,7 @@ main (int argc, char *argv[])
 
 	hev_rcast_server_destroy (server);
 	hev_task_system_fini ();
+	hev_config_fini ();
 
 	return 0;
 }
