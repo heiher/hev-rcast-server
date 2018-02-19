@@ -376,7 +376,7 @@ input_session_notify_handler (HevRcastBaseSession *session,
 		break;
 	default:
 		self->input_session = NULL;
-		hev_rcast_temp_session_unref ((HevRcastTempSession *) session);
+		hev_rcast_input_session_unref ((HevRcastInputSession *) session);
 	}
 }
 
