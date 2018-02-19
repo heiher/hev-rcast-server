@@ -47,8 +47,8 @@ static void session_manager_insert_temp_session (HevRcastServer *self,
 			HevRcastTempSession *session);
 static void session_manager_remove_temp_session (HevRcastServer *self,
 			HevRcastTempSession *session);
-static void temp_session_close_handler (HevRcastBaseSession *session,
-			HevRcastBaseSessionCloseNotifyAction action, void *data);
+static void temp_session_notify_handler (HevRcastBaseSession *session,
+			HevRcastBaseSessionNotifyAction action, void *data);
 
 HevRcastServer *
 hev_rcast_server_new (void)
@@ -226,7 +226,7 @@ hev_rcast_task_listen_entry (void *data)
 			close (fd);
 		}
 
-		session = hev_rcast_temp_session_new (fd, temp_session_close_handler, self);
+		session = hev_rcast_temp_session_new (fd, temp_session_notify_handler, self);
 		if (!session) {
 			close (fd);
 			continue;
@@ -331,15 +331,15 @@ session_manager_remove_temp_session (HevRcastServer *self, HevRcastTempSession *
 }
 
 static void
-temp_session_close_handler (HevRcastBaseSession *session,
-			HevRcastBaseSessionCloseNotifyAction action, void *data)
+temp_session_notify_handler (HevRcastBaseSession *session,
+			HevRcastBaseSessionNotifyAction action, void *data)
 {
 	HevRcastServer *self = data;
 
 	switch (action) {
-	case HEV_RCAST_BASE_SESSION_CLOSE_NOTIFY_TO_INPUT:
+	case HEV_RCAST_BASE_SESSION_NOTIFY_TO_INPUT:
 		break;
-	case HEV_RCAST_BASE_SESSION_CLOSE_NOTIFY_TO_OUTPUT:
+	case HEV_RCAST_BASE_SESSION_NOTIFY_TO_OUTPUT:
 		break;
 	default:
 		close (session->fd);
