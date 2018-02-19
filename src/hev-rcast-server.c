@@ -24,6 +24,8 @@
 #include "hev-rcast-temp-session.h"
 #include "hev-config.h"
 
+#define TIMEOUT		(30 * 1000)
+
 struct _HevRcastServer
 {
 	HevTask *task_listen;
@@ -207,6 +209,67 @@ hev_rcast_task_dispatch_entry (void *data)
 static void
 hev_rcast_task_session_manager_entry (void *data)
 {
+	HevRcastServer *self = data;
+
+	for (;;) {
+		HevRcastBaseSession *session;
+
+		hev_task_sleep (TIMEOUT);
+
+		/* input session */
+		if (self->input_session) {
+			self->input_session->hp --;
+			if (self->input_session->hp == 0) {
+				/* wakeup session's task to do destroy */
+				hev_task_wakeup (self->input_session->task);
+#ifdef _DEBUG
+				printf ("Wakeup session %p's task %p\n",
+							self->input_session,
+							self->input_session->task);
+#endif
+			}
+		}
+		hev_task_yield (HEV_TASK_YIELD);
+
+		/* temp sessions */
+#ifdef _DEBUG
+		printf ("Enumerating temp session list ...\n");
+#endif
+		for (session=self->temp_sessions; session; session=session->next) {
+#ifdef _DEBUG
+			printf ("Session %p's hp %d\n", session, session->hp);
+#endif
+			session->hp --;
+			if (session->hp > 0)
+				continue;
+
+			/* wakeup session's task to do destroy */
+			hev_task_wakeup (session->task);
+#ifdef _DEBUG
+			printf ("Wakeup session %p's task %p\n", session, session->task);
+#endif
+		}
+		hev_task_yield (HEV_TASK_YIELD);
+
+		/* output sessions */
+#ifdef _DEBUG
+		printf ("Enumerating output session list ...\n");
+#endif
+		for (session=self->output_sessions; session; session=session->next) {
+#ifdef _DEBUG
+			printf ("Session %p's hp %d\n", session, session->hp);
+#endif
+			session->hp --;
+			if (session->hp > 0)
+				continue;
+
+			/* wakeup session's task to do destroy */
+			hev_task_wakeup (session->task);
+#ifdef _DEBUG
+			printf ("Wakeup session %p's task %p\n", session, session->task);
+#endif
+		}
+	}
 }
 
 static void
@@ -247,5 +310,9 @@ session_manager_remove_temp_session (HevRcastServer *self, HevRcastTempSession *
 static void
 temp_session_close_handler (HevRcastBaseSession *session, void *data)
 {
+	HevRcastServer *self = data;
+
+	session_manager_remove_temp_session (self, (HevRcastTempSession *) session);
+	hev_rcast_temp_session_unref ((HevRcastTempSession *) session);
 }
 
