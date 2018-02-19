@@ -133,8 +133,6 @@ hev_rcast_task_entry (void *data)
 	ssize_t len;
 	HevRcastBaseSessionNotifyAction action;
 
-	action = HEV_RCAST_BASE_SESSION_NOTIFY_FREE;
-
 	hev_task_add_fd (task, self->base.fd, EPOLLIN);
 
 	for (;;) {
@@ -199,9 +197,13 @@ retry_alloc:
 
 			self->buffers_w = next_w;
 		}
+
+		action = HEV_RCAST_BASE_SESSION_NOTIFY_DISPATCH;
+		self->notify ((HevRcastBaseSession *) self, action, self->notify_data);
 	}
 
 notify:
+	action = HEV_RCAST_BASE_SESSION_NOTIFY_FREE;
 	self->notify ((HevRcastBaseSession *) self, action, self->notify_data);
 }
 
