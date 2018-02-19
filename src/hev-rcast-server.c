@@ -43,9 +43,9 @@ struct _HevRcastServer
 static void hev_rcast_task_listen_entry (void *data);
 static void hev_rcast_task_dispatch_entry (void *data);
 static void hev_rcast_task_session_manager_entry (void *data);
-static void session_manager_insert_temp_session (HevRcastServer *self,
+static void session_manager_insert_session (HevRcastBaseSession **list,
 			HevRcastTempSession *session);
-static void session_manager_remove_temp_session (HevRcastServer *self,
+static void session_manager_remove_session (HevRcastBaseSession **list,
 			HevRcastTempSession *session);
 static void temp_session_notify_handler (HevRcastBaseSession *session,
 			HevRcastBaseSessionNotifyAction action, void *data);
@@ -232,7 +232,7 @@ hev_rcast_task_listen_entry (void *data)
 			continue;
 		}
 
-		session_manager_insert_temp_session (self, session);
+		session_manager_insert_session (&self->temp_sessions, session);
 		hev_rcast_temp_session_run (session);
 	}
 }
@@ -296,7 +296,7 @@ hev_rcast_task_session_manager_entry (void *data)
 }
 
 static void
-session_manager_insert_temp_session (HevRcastServer *self, HevRcastTempSession *session)
+session_manager_insert_session (HevRcastBaseSession **list, HevRcastTempSession *session)
 {
 	HevRcastBaseSession *session_base = (HevRcastBaseSession *) session;
 
@@ -305,14 +305,14 @@ session_manager_insert_temp_session (HevRcastServer *self, HevRcastTempSession *
 #endif
 	/* insert session to temp sessions */
 	session_base->prev = NULL;
-	session_base->next = self->temp_sessions;
-	if (self->temp_sessions)
-		self->temp_sessions->prev = session_base;
-	self->temp_sessions= session_base;
+	session_base->next = *list;
+	if (*list)
+		(*list)->prev = session_base;
+	*list = session_base;
 }
 
 static void
-session_manager_remove_temp_session (HevRcastServer *self, HevRcastTempSession *session)
+session_manager_remove_session (HevRcastBaseSession **list, HevRcastTempSession *session)
 {
 	HevRcastBaseSession *session_base = (HevRcastBaseSession *) session;
 
@@ -323,7 +323,7 @@ session_manager_remove_temp_session (HevRcastServer *self, HevRcastTempSession *
 	if (session_base->prev) {
 		session_base->prev->next = session_base->next;
 	} else {
-		self->temp_sessions = session_base->next;
+		*list = session_base->next;
 	}
 	if (session_base->next) {
 		session_base->next->prev = session_base->prev;
@@ -346,7 +346,7 @@ temp_session_notify_handler (HevRcastBaseSession *session,
 		break;
 	}
 
-	session_manager_remove_temp_session (self, (HevRcastTempSession *) session);
+	session_manager_remove_session (&self->temp_sessions, (HevRcastTempSession *) session);
 	hev_rcast_temp_session_unref ((HevRcastTempSession *) session);
 }
 
