@@ -202,9 +202,8 @@ retry_alloc:
 				self->buffers_r = (self->buffers_r + 1) % BUFFERS_COUNT;
 				drops ++;
 			}
-
-			self->buffers_w = next_w;
 		}
+		self->buffers_w = next_w;
 
 		action = HEV_RCAST_BASE_SESSION_NOTIFY_DISPATCH;
 		self->notify ((HevRcastBaseSession *) self, action, self->notify_data);
