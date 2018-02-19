@@ -27,7 +27,7 @@ struct _HevRcastInputSession
 
 	int ref_count;
 
-	HevRcastBaseSessionCloseNotify notify;
+	HevRcastBaseSessionNotify notify;
 	void *notify_data;
 
 	unsigned int buffers_r;
@@ -40,7 +40,7 @@ static void hev_rcast_task_entry (void *data);
 
 HevRcastInputSession *
 hev_rcast_input_session_new (int fd,
-			HevRcastBaseSessionCloseNotify notify, void *data)
+			HevRcastBaseSessionNotify notify, void *data)
 {
 	HevRcastInputSession *self;
 
@@ -131,9 +131,9 @@ hev_rcast_task_entry (void *data)
 	HevRcastMessage msg;
 	size_t msg_len;
 	ssize_t len;
-	HevRcastBaseSessionCloseNotifyAction action;
+	HevRcastBaseSessionNotifyAction action;
 
-	action = HEV_RCAST_BASE_SESSION_CLOSE_NOTIFY_FREE;
+	action = HEV_RCAST_BASE_SESSION_NOTIFY_FREE;
 
 	hev_task_add_fd (task, self->base.fd, EPOLLIN);
 

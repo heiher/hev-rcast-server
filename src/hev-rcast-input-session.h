@@ -16,7 +16,7 @@
 typedef struct _HevRcastInputSession HevRcastInputSession;
 
 HevRcastInputSession * hev_rcast_input_session_new (int fd,
-			HevRcastBaseSessionCloseNotify notify, void *data);
+			HevRcastBaseSessionNotify notify, void *data);
 
 HevRcastInputSession * hev_rcast_input_session_ref (HevRcastInputSession *self);
 void hev_rcast_input_session_unref (HevRcastInputSession *self);
