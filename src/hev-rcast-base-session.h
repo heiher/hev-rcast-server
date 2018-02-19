@@ -15,7 +15,16 @@
 #define HEV_RCAST_BASE_SESSION_HP	(10)
 
 typedef struct _HevRcastBaseSession HevRcastBaseSession;
-typedef void (*HevRcastBaseSessionCloseNotify) (HevRcastBaseSession *self, void *data);
+typedef enum _HevRcastBaseSessionCloseNotifyAction HevRcastBaseSessionCloseNotifyAction;
+typedef void (*HevRcastBaseSessionCloseNotify) (HevRcastBaseSession *self,
+			HevRcastBaseSessionCloseNotifyAction action, void *data);
+
+enum _HevRcastBaseSessionCloseNotifyAction
+{
+	HEV_RCAST_BASE_SESSION_CLOSE_NOTIFY_FREE = 0,
+	HEV_RCAST_BASE_SESSION_CLOSE_NOTIFY_TO_INPUT,
+	HEV_RCAST_BASE_SESSION_CLOSE_NOTIFY_TO_OUTPUT,
+};
 
 struct _HevRcastBaseSession
 {
@@ -25,6 +34,7 @@ struct _HevRcastBaseSession
 	HevTask *task;
 
 	int hp;
+	int fd;
 };
 
 #endif /* __HEV_RCAST_BASE_SESSION_H__ */
