@@ -10,5 +10,12 @@
 #ifndef __HEV_RCAST_SERVER_H__
 #define __HEV_RCAST_SERVER_H__
 
+typedef struct _HevRcastServer HevRcastServer;
+
+HevRcastServer * hev_rcast_server_new (void);
+void hev_rcast_server_destroy (HevRcastServer *self);
+
+void hev_rcast_server_run (HevRcastServer *self);
+
 #endif /* __HEV_RCAST_SERVER_H__ */
 
