@@ -12,15 +12,13 @@
 
 typedef struct _HevRcastBuffer HevRcastBuffer;
 
-struct _HevRcastBuffer
-{
-	int ref_count;
+HevRcastBuffer * hev_rcast_buffer_new (unsigned char type, unsigned int length);
+HevRcastBuffer * hev_rcast_buffer_ref (HevRcastBuffer *self);
+void hev_rcast_buffer_unref (HevRcastBuffer *self);
 
-	unsigned int length;
-	unsigned char type;
-
-	unsigned char data[0];
-};
+void * hev_rcast_buffer_get_data (HevRcastBuffer *self);
+unsigned int hev_rcast_buffer_get_data_length (HevRcastBuffer *self);
+unsigned char hev_rcast_buffer_get_type (HevRcastBuffer *self);
 
 #endif /* __HEV_RCAST_BUFFER_H__ */
 
