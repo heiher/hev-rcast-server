@@ -33,6 +33,7 @@ struct _HevRcastServer
 	HevTask *task_session_manager;
 
 	int fd;
+	int quit;
 
 	HevRcastBaseSession *input_session;
 	HevRcastBaseSession *output_sessions;
@@ -155,6 +156,46 @@ hev_rcast_server_run (HevRcastServer *self)
 	hev_task_run (self->task_session_manager, hev_rcast_task_session_manager_entry, self);
 }
 
+void
+hev_rcast_server_quit (HevRcastServer *self)
+{
+	HevRcastBaseSession *session;
+
+	self->quit = 1;
+
+	hev_task_wakeup (self->task_listen);
+	hev_task_wakeup (self->task_dispatch);
+	hev_task_wakeup (self->task_session_manager);
+
+	/* input session */
+	if (self->input_session) {
+		self->input_session->hp = 0;
+		hev_task_wakeup (self->input_session->task);
+	}
+
+	/* temp sessions */
+	for (session=self->temp_sessions; session; session=session->next) {
+		session->hp = 0;
+		hev_task_wakeup (session->task);
+	}
+
+	/* output sessions */
+	for (session=self->output_sessions; session; session=session->next) {
+		session->hp = 0;
+		hev_task_wakeup (session->task);
+	}
+}
+
+static int
+task_listen_io_yielder (HevTaskYieldType type, void *data)
+{
+	HevRcastServer *self = data;
+
+	hev_task_yield (type);
+
+	return (self->quit) ? -1 : 0;
+}
+
 static void
 hev_rcast_task_listen_entry (void *data)
 {
@@ -171,7 +212,7 @@ hev_rcast_task_listen_entry (void *data)
 		HevRcastTempSession *session;
 
 		fd = hev_task_io_socket_accept (self->fd, in_addr, &addr_len,
-					NULL, self);
+					task_listen_io_yielder, self);
 		if (-1 == fd) {
 			fprintf (stderr, "Accept failed!\n");
 			continue;
@@ -215,6 +256,8 @@ hev_rcast_task_session_manager_entry (void *data)
 		HevRcastBaseSession *session;
 
 		hev_task_sleep (TIMEOUT);
+		if (self->quit)
+			break;
 
 		/* input session */
 		if (self->input_session) {
