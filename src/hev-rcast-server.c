@@ -47,7 +47,8 @@ static void session_manager_insert_temp_session (HevRcastServer *self,
 			HevRcastTempSession *session);
 static void session_manager_remove_temp_session (HevRcastServer *self,
 			HevRcastTempSession *session);
-static void temp_session_close_handler (HevRcastBaseSession *session, void *data);
+static void temp_session_close_handler (HevRcastBaseSession *session,
+			HevRcastBaseSessionCloseNotifyAction action, void *data);
 
 HevRcastServer *
 hev_rcast_server_new (void)
@@ -351,9 +352,20 @@ session_manager_remove_temp_session (HevRcastServer *self, HevRcastTempSession *
 }
 
 static void
-temp_session_close_handler (HevRcastBaseSession *session, void *data)
+temp_session_close_handler (HevRcastBaseSession *session,
+			HevRcastBaseSessionCloseNotifyAction action, void *data)
 {
 	HevRcastServer *self = data;
+
+	switch (action) {
+	case HEV_RCAST_BASE_SESSION_CLOSE_NOTIFY_TO_INPUT:
+		break;
+	case HEV_RCAST_BASE_SESSION_CLOSE_NOTIFY_TO_OUTPUT:
+		break;
+	default:
+		close (session->fd);
+		break;
+	}
 
 	session_manager_remove_temp_session (self, (HevRcastTempSession *) session);
 	hev_rcast_temp_session_unref ((HevRcastTempSession *) session);
