@@ -122,6 +122,8 @@ hev_rcast_output_session_push_buffer (HevRcastOutputSession *self,
 
 	self->buffers[self->buffers_w] = buffer;
 	self->buffers_w = next_w;
+
+	hev_task_wakeup (self->base.task);
 }
 
 static int
