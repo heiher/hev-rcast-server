@@ -177,8 +177,7 @@ retry_alloc:
 		if (HEV_RCAST_MESSAGE_CFG_FRAME == msg.frame.type) {
 			if (self->buffer_cfg)
 				hev_rcast_buffer_unref (self->buffer_cfg);
-			self->buffer_cfg = buffer;
-			continue;
+			self->buffer_cfg = hev_rcast_buffer_ref (buffer);
 		}
 
 		/* other frames */
