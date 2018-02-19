@@ -23,6 +23,7 @@
 #include "hev-rcast-base-session.h"
 #include "hev-rcast-temp-session.h"
 #include "hev-rcast-input-session.h"
+#include "hev-rcast-output-session.h"
 #include "hev-config.h"
 
 #define TIMEOUT		(30 * 1000)
@@ -51,6 +52,8 @@ static void session_manager_remove_session (HevRcastBaseSession **list,
 static void temp_session_notify_handler (HevRcastBaseSession *session,
 			HevRcastBaseSessionNotifyAction action, void *data);
 static void input_session_notify_handler (HevRcastBaseSession *session,
+			HevRcastBaseSessionNotifyAction action, void *data);
+static void output_session_notify_handler (HevRcastBaseSession *session,
 			HevRcastBaseSessionNotifyAction action, void *data);
 
 HevRcastServer *
@@ -350,7 +353,18 @@ temp_session_notify_handler (HevRcastBaseSession *session,
 		break;
 	}
 	case HEV_RCAST_BASE_SESSION_NOTIFY_TO_OUTPUT:
+	{
+		HevRcastOutputSession *s;
+
+		s = hev_rcast_output_session_new (session->fd, output_session_notify_handler, self);
+		if (s) {
+			session_manager_insert_session (&self->output_sessions, (HevRcastBaseSession *) s);
+			hev_rcast_output_session_run (s);
+		} else {
+			close (session->fd);
+		}
 		break;
+	}
 	default:
 		close (session->fd);
 		break;
@@ -374,5 +388,15 @@ input_session_notify_handler (HevRcastBaseSession *session,
 		self->input_session = NULL;
 		hev_rcast_input_session_unref ((HevRcastInputSession *) session);
 	}
+}
+
+static void
+output_session_notify_handler (HevRcastBaseSession *session,
+			HevRcastBaseSessionNotifyAction action, void *data)
+{
+	HevRcastServer *self = data;
+
+	session_manager_remove_session (&self->output_sessions, session);
+	hev_rcast_output_session_unref ((HevRcastOutputSession *) session);
 }
 
