@@ -124,8 +124,6 @@ task_io_yielder (HevTaskYieldType type, void *data)
 {
 	HevRcastInputSession *self = data;
 
-	self->base.hp = HEV_RCAST_BASE_SESSION_HP;
-
 	hev_task_yield (type);
 
 	return (self->base.hp > 0) ? 0 : -1;
@@ -203,6 +201,8 @@ retry_alloc:
 			}
 		}
 		self->buffers_w = next_w;
+
+		self->base.hp = HEV_RCAST_BASE_SESSION_HP;
 
 		action = HEV_RCAST_BASE_SESSION_NOTIFY_DISPATCH;
 		self->notify ((HevRcastBaseSession *) self, action, self->notify_data);
