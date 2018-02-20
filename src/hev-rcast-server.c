@@ -399,6 +399,7 @@ temp_session_notify_handler (HevRcastBaseSession *session,
 				buffer = hev_rcast_input_session_get_buffer (is, 1);
 				if (buffer)
 					hev_rcast_output_session_push_buffer (s, buffer);
+				hev_rcast_input_session_rsync (is);
 			}
 		} else {
 			close (session->fd);
