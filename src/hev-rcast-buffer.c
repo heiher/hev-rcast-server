@@ -32,6 +32,7 @@ hev_rcast_buffer_new (unsigned char type, unsigned int length)
 
 	self->type = type;
 	self->length = length;
+	self->ref_count = 1;
 
 	return self;
 }
