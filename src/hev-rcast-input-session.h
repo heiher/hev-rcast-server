@@ -25,5 +25,7 @@ void hev_rcast_input_session_run (HevRcastInputSession *self);
 
 HevRcastBuffer * hev_rcast_input_session_get_buffer (HevRcastInputSession *self, int cfg);
 
+void hev_rcast_input_session_rsync (HevRcastInputSession *self);
+
 #endif /* __HEV_RCAST_INPUT_SESSION_H__ */
 

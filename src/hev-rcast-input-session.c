@@ -119,6 +119,16 @@ hev_rcast_input_session_get_buffer (HevRcastInputSession *self, int cfg)
 	return buffer;
 }
 
+void
+hev_rcast_input_session_rsync (HevRcastInputSession *self)
+{
+	HevRcastMessage msg;
+
+	msg.type = HEV_RCAST_MESSAGE_RSYNC;
+
+	send (self->base.fd, &msg, sizeof (msg.type), 0);
+}
+
 static int
 task_io_yielder (HevTaskYieldType type, void *data)
 {
