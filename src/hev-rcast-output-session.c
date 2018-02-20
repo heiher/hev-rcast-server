@@ -133,8 +133,6 @@ task_io_yielder (HevTaskYieldType type, void *data)
 {
 	HevRcastOutputSession *self = data;
 
-	self->base.hp = HEV_RCAST_BASE_SESSION_HP;
-
 	hev_task_yield (type);
 
 	return (self->base.hp > 0) ? 0 : -1;
@@ -185,6 +183,8 @@ hev_rcast_task_entry (void *data)
 		}
 
 		hev_rcast_buffer_unref (buffer);
+
+		self->base.hp = HEV_RCAST_BASE_SESSION_HP;
 	}
 
 notify:
