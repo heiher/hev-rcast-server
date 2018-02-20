@@ -157,6 +157,8 @@ hev_rcast_task_entry (void *data)
 
 		if (self->buffers_r == self->buffers_w) {
 			hev_task_yield (HEV_TASK_WAITIO);
+			if (self->base.hp == 0)
+				break;
 			continue;
 		}
 
