@@ -374,6 +374,8 @@ temp_session_notify_handler (HevRcastBaseSession *session,
 
 		s = hev_rcast_input_session_new (session->fd, input_session_notify_handler, self);
 		if (s) {
+			if (self->input_session)
+				hev_rcast_base_session_quit (self->input_session);
 			self->input_session = (HevRcastBaseSession *) s;
 			hev_rcast_input_session_run (s);
 		} else {
@@ -423,7 +425,8 @@ input_session_notify_handler (HevRcastBaseSession *session,
 		hev_task_wakeup (self->task_dispatch);
 		break;
 	default:
-		self->input_session = NULL;
+		if (self->input_session == session)
+			self->input_session = NULL;
 		hev_rcast_input_session_unref ((HevRcastInputSession *) session);
 	}
 }
