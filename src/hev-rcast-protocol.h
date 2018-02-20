@@ -22,6 +22,7 @@ enum _HevRcastMessageType
 {
 	HEV_RCAST_MESSAGE_LOGIN = 0,
 	HEV_RCAST_MESSAGE_FRAME,
+	HEV_RCAST_MESSAGE_RSYNC,
 };
 
 enum _HevRcastMessageLoginDirection
