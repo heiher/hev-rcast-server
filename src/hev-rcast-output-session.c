@@ -14,12 +14,11 @@
 #include "hev-rcast-output-session.h"
 #include "hev-rcast-protocol.h"
 #include "hev-rcast-server.h"
+#include "hev-config.h"
 
 #include <hev-task.h>
 #include <hev-task-io-socket.h>
 #include <hev-memory-allocator.h>
-
-#define BUFFERS_COUNT		(72)
 
 struct _HevRcastOutputSession
 {
@@ -33,7 +32,8 @@ struct _HevRcastOutputSession
 
 	unsigned int buffers_r;
 	unsigned int buffers_w;
-	HevRcastBuffer *buffers[BUFFERS_COUNT];
+	unsigned int buffers_count;
+	HevRcastBuffer *buffers[0];
 };
 
 static void hev_rcast_task_entry (void *data);
@@ -43,8 +43,11 @@ hev_rcast_output_session_new (int fd,
 			HevRcastBaseSessionNotify notify, void *data)
 {
 	HevRcastOutputSession *self;
+	unsigned int buffers_count = hev_config_get_rcast_frame_buffers ();
+	unsigned int buffers_size;
 
-	self = hev_malloc0 (sizeof (HevRcastOutputSession));
+	buffers_size = sizeof (HevRcastBuffer *) * buffers_count;
+	self = hev_malloc0 (sizeof (HevRcastOutputSession) + buffers_size);
 	if (!self) {
 		fprintf (stderr, "Alloc HevRcastOutputSession failed!\n");
 		return NULL;
@@ -64,6 +67,7 @@ hev_rcast_output_session_new (int fd,
 	self->skip_ref_buffer = 1;
 	self->notify = notify;
 	self->notify_data = data;
+	self->buffers_count = buffers_count;
 
 	return self;
 }
@@ -87,7 +91,7 @@ hev_rcast_output_session_unref (HevRcastOutputSession *self)
 
 	for (; self->buffers_r != self->buffers_w;) {
 		hev_rcast_buffer_unref (self->buffers[self->buffers_r]);
-		self->buffers_r = (self->buffers_r + 1) % BUFFERS_COUNT;
+		self->buffers_r = (self->buffers_r + 1) % self->buffers_count;
 	}
 
 	hev_free (self);
@@ -106,7 +110,7 @@ hev_rcast_output_session_push_buffer (HevRcastOutputSession *self,
 	int retval = 0;
 	unsigned int next_w;
 
-	next_w = (self->buffers_w + 1) % BUFFERS_COUNT;
+	next_w = (self->buffers_w + 1) % self->buffers_count;
 	if (self->buffers_r == next_w) {
 		retval = 1;
 		self->skip_ref_buffer = 1;
@@ -116,7 +120,7 @@ hev_rcast_output_session_push_buffer (HevRcastOutputSession *self,
 				break;
 
 			hev_rcast_buffer_unref (self->buffers[self->buffers_r]);
-			self->buffers_r = (self->buffers_r + 1) % BUFFERS_COUNT;
+			self->buffers_r = (self->buffers_r + 1) % self->buffers_count;
 		}
 	}
 
@@ -176,7 +180,7 @@ hev_rcast_task_entry (void *data)
 		}
 
 		buffer = self->buffers[self->buffers_r];
-		self->buffers_r = (self->buffers_r + 1) % BUFFERS_COUNT;
+		self->buffers_r = (self->buffers_r + 1) % self->buffers_count;
 
 		data = hev_rcast_buffer_get_data (buffer);
 		data_len = hev_rcast_buffer_get_data_length (buffer);
