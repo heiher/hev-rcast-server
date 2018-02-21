@@ -20,6 +20,7 @@
 #include <hev-memory-allocator.h>
 
 #include "hev-rcast-server.h"
+#include "hev-rcast-protocol.h"
 #include "hev-rcast-base-session.h"
 #include "hev-rcast-temp-session.h"
 #include "hev-rcast-input-session.h"
@@ -27,15 +28,17 @@
 #include "hev-config.h"
 
 #define TIMEOUT		(30 * 1000)
+#define RSYNC_INTERVAL	(250)
 
 struct _HevRcastServer
 {
 	HevTask *task_listen;
-	HevTask *task_dispatch;
+	HevTask *task_rsync_manager;
 	HevTask *task_session_manager;
 
 	int fd;
 	int quit;
+	int rsync;
 
 	HevRcastBaseSession *input_session;
 	HevRcastBaseSession *output_sessions;
@@ -43,8 +46,10 @@ struct _HevRcastServer
 };
 
 static void hev_rcast_task_listen_entry (void *data);
-static void hev_rcast_task_dispatch_entry (void *data);
+static void hev_rcast_task_rsync_manager_entry (void *data);
 static void hev_rcast_task_session_manager_entry (void *data);
+static void hev_rcast_dispatch_buffer (HevRcastServer *self);
+static void rsync_manager_request_rsync (HevRcastServer *self);
 static void session_manager_insert_session (HevRcastBaseSession **list,
 			HevRcastBaseSession *session);
 static void session_manager_remove_session (HevRcastBaseSession **list,
@@ -119,9 +124,9 @@ hev_rcast_server_new (void)
 		return NULL;
 	}
 
-	self->task_dispatch = hev_task_new (-1);
-	if (!self->task_dispatch) {
-		fprintf (stderr, "Create task dispatch failed!\n");
+	self->task_rsync_manager = hev_task_new (-1);
+	if (!self->task_rsync_manager) {
+		fprintf (stderr, "Create task rsync manager failed!\n");
 		hev_task_unref (self->task_listen);
 		close (self->fd);
 		hev_free (self);
@@ -131,7 +136,7 @@ hev_rcast_server_new (void)
 	self->task_session_manager = hev_task_new (-1);
 	if (!self->task_session_manager) {
 		fprintf (stderr, "Create task session manager failed!\n");
-		hev_task_unref (self->task_dispatch);
+		hev_task_unref (self->task_rsync_manager);
 		hev_task_unref (self->task_listen);
 		close (self->fd);
 		hev_free (self);
@@ -139,7 +144,7 @@ hev_rcast_server_new (void)
 	}
 
 	hev_task_ref (self->task_listen);
-	hev_task_ref (self->task_dispatch);
+	hev_task_ref (self->task_rsync_manager);
 	hev_task_ref (self->task_session_manager);
 
 	return self;
@@ -148,7 +153,7 @@ hev_rcast_server_new (void)
 void hev_rcast_server_destroy (HevRcastServer *self)
 {
 	hev_task_unref (self->task_listen);
-	hev_task_unref (self->task_dispatch);
+	hev_task_unref (self->task_rsync_manager);
 	hev_task_unref (self->task_session_manager);
 
 	close (self->fd);
@@ -159,7 +164,7 @@ void
 hev_rcast_server_run (HevRcastServer *self)
 {
 	hev_task_run (self->task_listen, hev_rcast_task_listen_entry, self);
-	hev_task_run (self->task_dispatch, hev_rcast_task_dispatch_entry, self);
+	hev_task_run (self->task_rsync_manager, hev_rcast_task_rsync_manager_entry, self);
 	hev_task_run (self->task_session_manager, hev_rcast_task_session_manager_entry, self);
 }
 
@@ -171,7 +176,7 @@ hev_rcast_server_quit (HevRcastServer *self)
 	self->quit = 1;
 
 	hev_task_wakeup (self->task_listen);
-	hev_task_wakeup (self->task_dispatch);
+	hev_task_wakeup (self->task_rsync_manager);
 	hev_task_wakeup (self->task_session_manager);
 
 	/* input session */
@@ -244,36 +249,36 @@ hev_rcast_task_listen_entry (void *data)
 }
 
 static void
-hev_rcast_task_dispatch_entry (void *data)
+hev_rcast_task_rsync_manager_entry (void *data)
 {
 	HevRcastServer *self = data;
 
 	for (; !self->quit;) {
-		HevRcastInputSession *input_session;
-		HevRcastBuffer *buffer;
-		HevRcastBaseSession *session;
+		unsigned int delay = RSYNC_INTERVAL;
+		HevRcastInputSession *is;
 
-		if (!self->input_session) {
+		for (; !self->quit;) {
+			if (self->rsync)
+				break;
 			hev_task_yield (HEV_TASK_WAITIO);
-			continue;
 		}
-		input_session = (HevRcastInputSession *) self->input_session;
 
-		buffer = hev_rcast_input_session_get_buffer (input_session, 0);
-		if (!buffer) {
+		do {
+			delay = hev_task_sleep (delay);
+		} while (!self->quit && delay);
+
+retry:
+		if (!self->rsync)
+			continue;
+
+		for (; !self->quit && !self->input_session;)
 			hev_task_yield (HEV_TASK_WAITIO);
-			continue;
-		}
 
-		for (session=self->output_sessions; session; session=session->next) {
-			HevRcastOutputSession *s = (HevRcastOutputSession *) session;
+		is = (HevRcastInputSession *) self->input_session;
+		if (hev_rcast_input_session_rsync (is) < 0)
+			goto retry;
 
-			hev_rcast_buffer_ref (buffer);
-			hev_rcast_output_session_push_buffer (s, buffer);
-		}
-
-		hev_rcast_buffer_unref (buffer);
-		hev_task_yield (HEV_TASK_YIELD);
+		self->rsync = 0;
 	}
 }
 
@@ -331,6 +336,37 @@ hev_rcast_task_session_manager_entry (void *data)
 }
 
 static void
+hev_rcast_dispatch_buffer (HevRcastServer *self)
+{
+	HevRcastInputSession *input_session;
+	HevRcastBuffer *buffer;
+	HevRcastBaseSession *session;
+
+	input_session = (HevRcastInputSession *) self->input_session;
+	buffer = hev_rcast_input_session_get_buffer (input_session, 0);
+
+	if (HEV_RCAST_MESSAGE_KEY_FRAME == hev_rcast_buffer_get_type (buffer))
+		self->rsync = 0;
+
+	for (session=self->output_sessions; session; session=session->next) {
+		HevRcastOutputSession *s = (HevRcastOutputSession *) session;
+
+		hev_rcast_buffer_ref (buffer);
+		if (hev_rcast_output_session_push_buffer (s, buffer))
+			rsync_manager_request_rsync (self);
+	}
+
+	hev_rcast_buffer_unref (buffer);
+}
+
+static void
+rsync_manager_request_rsync (HevRcastServer *self)
+{
+	self->rsync = 1;
+	hev_task_wakeup (self->task_rsync_manager);
+}
+
+static void
 session_manager_insert_session (HevRcastBaseSession **list, HevRcastBaseSession *session)
 {
 #ifdef _DEBUG
@@ -378,6 +414,7 @@ temp_session_notify_handler (HevRcastBaseSession *session,
 				hev_rcast_base_session_quit (self->input_session);
 			self->input_session = (HevRcastBaseSession *) s;
 			hev_rcast_input_session_run (s);
+			hev_task_wakeup (self->task_rsync_manager);
 		} else {
 			close (session->fd);
 		}
@@ -399,8 +436,8 @@ temp_session_notify_handler (HevRcastBaseSession *session,
 				buffer = hev_rcast_input_session_get_buffer (is, 1);
 				if (buffer)
 					hev_rcast_output_session_push_buffer (s, buffer);
-				hev_rcast_input_session_rsync (is);
 			}
+			rsync_manager_request_rsync (self);
 		} else {
 			close (session->fd);
 		}
@@ -423,7 +460,7 @@ input_session_notify_handler (HevRcastBaseSession *session,
 
 	switch (action) {
 	case HEV_RCAST_BASE_SESSION_NOTIFY_DISPATCH:
-		hev_task_wakeup (self->task_dispatch);
+		hev_rcast_dispatch_buffer (self);
 		break;
 	default:
 		if (self->input_session == session)
