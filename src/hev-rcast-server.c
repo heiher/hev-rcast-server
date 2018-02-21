@@ -256,10 +256,10 @@ hev_rcast_task_rsync_manager_entry (void *data)
 		unsigned int delay = hev_config_get_rcast_rsync_interval ();
 		HevRcastInputSession *is;
 
-		for (; !self->quit;) {
-			if (self->rsync)
-				break;
+		for (; !self->rsync;) {
 			hev_task_yield (HEV_TASK_WAITIO);
+			if (self->quit)
+				return;
 		}
 
 		do {
