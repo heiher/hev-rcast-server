@@ -9,6 +9,7 @@
 
 
 #include <stdio.h>
+#include <unistd.h>
 #include <arpa/inet.h>
 
 #include "hev-rcast-input-session.h"
@@ -81,6 +82,8 @@ hev_rcast_input_session_unref (HevRcastInputSession *self)
 	self->ref_count --;
 	if (self->ref_count)
 		return;
+
+	close (self->base.fd);
 
 	if (self->buffer_cfg)
 		hev_rcast_buffer_unref (self->buffer_cfg);
