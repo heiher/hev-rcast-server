@@ -271,8 +271,11 @@ retry:
 		if (!self->rsync)
 			continue;
 
-		for (; !self->quit && !self->input_session;)
+		for (; !self->input_session;) {
 			hev_task_yield (HEV_TASK_WAITIO);
+			if (self->quit)
+				return;
+		}
 
 		is = (HevRcastInputSession *) self->input_session;
 		if (hev_rcast_input_session_rsync (is) < 0)
