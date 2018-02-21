@@ -262,11 +262,13 @@ hev_rcast_task_rsync_manager_entry (void *data)
 				return;
 		}
 
+retry:
 		do {
 			delay = hev_task_sleep (delay);
-		} while (!self->quit && delay);
+			if (self->quit)
+				return;
+		} while (delay);
 
-retry:
 		if (!self->rsync)
 			continue;
 
@@ -277,8 +279,10 @@ retry:
 		}
 
 		is = (HevRcastInputSession *) self->input_session;
-		if (hev_rcast_input_session_rsync (is) < 0)
+		if (hev_rcast_input_session_rsync (is) < 0) {
+			delay = 100;
 			goto retry;
+		}
 
 		self->rsync = 0;
 	}
