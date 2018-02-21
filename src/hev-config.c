@@ -15,6 +15,9 @@
 static char listen_address[16];
 static unsigned short port;
 
+static unsigned int rcast_frame_buffers = 72;
+static unsigned int rcast_rsync_interval = 500;
+
 int
 hev_config_init (const char *config_path)
 {
@@ -45,6 +48,16 @@ hev_config_init (const char *config_path)
 		return -3;
 	}
 
+	/* Rcast:FrameBuffers */
+	int value = iniparser_getint (ini_dict, "Rcast:FrameBuffers", -1);
+	if (0 < value)
+		rcast_frame_buffers = value;
+
+	/* Rcast:RsyncInterval */
+	value = iniparser_getint (ini_dict, "Rcast:RsyncInterval", -1);
+	if (0 < value)
+		rcast_rsync_interval = value;
+
 	iniparser_freedict (ini_dict);
 
 	return 0;
@@ -65,5 +78,17 @@ unsigned short
 hev_config_get_port (void)
 {
 	return port;
+}
+
+unsigned int
+hev_config_get_rcast_frame_buffers (void)
+{
+	return rcast_frame_buffers;
+}
+
+unsigned int
+hev_config_get_rcast_rsync_interval (void)
+{
+	return rcast_rsync_interval;
 }
 

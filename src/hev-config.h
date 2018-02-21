@@ -20,5 +20,8 @@ void hev_config_fini (void);
 const char * hev_config_get_listen_address (void);
 unsigned short hev_config_get_port (void);
 
+unsigned int hev_config_get_rcast_frame_buffers (void);
+unsigned int hev_config_get_rcast_rsync_interval (void);
+
 #endif /* __HEV_CONFIG_H__ */
 
