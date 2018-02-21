@@ -28,7 +28,6 @@
 #include "hev-config.h"
 
 #define TIMEOUT		(30 * 1000)
-#define RSYNC_INTERVAL	(500)
 
 struct _HevRcastServer
 {
@@ -254,7 +253,7 @@ hev_rcast_task_rsync_manager_entry (void *data)
 	HevRcastServer *self = data;
 
 	for (; !self->quit;) {
-		unsigned int delay = RSYNC_INTERVAL;
+		unsigned int delay = hev_config_get_rcast_rsync_interval ();
 		HevRcastInputSession *is;
 
 		for (; !self->quit;) {
