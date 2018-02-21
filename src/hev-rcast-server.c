@@ -28,7 +28,7 @@
 #include "hev-config.h"
 
 #define TIMEOUT		(30 * 1000)
-#define RSYNC_INTERVAL	(250)
+#define RSYNC_INTERVAL	(500)
 
 struct _HevRcastServer
 {
