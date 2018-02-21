@@ -20,8 +20,6 @@
 #include <hev-task-io-socket.h>
 #include <hev-memory-allocator.h>
 
-#define BUFFERS_COUNT		(2048)
-
 struct _HevRcastInputSession
 {
 	HevRcastBaseSession base;
@@ -31,9 +29,7 @@ struct _HevRcastInputSession
 	HevRcastBaseSessionNotify notify;
 	void *notify_data;
 
-	unsigned int buffers_r;
-	unsigned int buffers_w;
-	HevRcastBuffer *buffers[BUFFERS_COUNT];
+	HevRcastBuffer *buffer;
 	HevRcastBuffer *buffer_cfg;
 };
 
@@ -88,10 +84,8 @@ hev_rcast_input_session_unref (HevRcastInputSession *self)
 	if (self->buffer_cfg)
 		hev_rcast_buffer_unref (self->buffer_cfg);
 
-	for (; self->buffers_r != self->buffers_w;) {
-		hev_rcast_buffer_unref (self->buffers[self->buffers_r]);
-		self->buffers_r = (self->buffers_r + 1) % BUFFERS_COUNT;
-	}
+	if (self->buffer)
+		hev_rcast_buffer_unref (self->buffer);
 
 	hev_free (self);
 }
@@ -113,11 +107,8 @@ hev_rcast_input_session_get_buffer (HevRcastInputSession *self, int cfg)
 		return hev_rcast_buffer_ref (self->buffer_cfg);
 	}
 
-	if (self->buffers_r == self->buffers_w)
-		return NULL;
-
-	buffer = self->buffers[self->buffers_r];
-	self->buffers_r = (self->buffers_r + 1) % BUFFERS_COUNT;
+	buffer = self->buffer;
+	self->buffer = NULL;
 
 	return buffer;
 }
@@ -158,7 +149,6 @@ hev_rcast_task_entry (void *data)
 		HevRcastBuffer *buffer;
 		size_t data_len;
 		void *data;
-		unsigned int next_w;
 
 		msg_len = sizeof (msg.type) + sizeof (HevRcastMessageFrame);
 		len = hev_task_io_socket_recv (self->base.fd, &msg, msg_len, MSG_WAITALL,
@@ -191,29 +181,10 @@ retry_alloc:
 			self->buffer_cfg = hev_rcast_buffer_ref (buffer);
 		}
 
-		/* other frames */
-		self->buffers[self->buffers_w] = buffer;
-		next_w = (self->buffers_w + 1) % BUFFERS_COUNT;
-		if (next_w == self->buffers_r) {
-			unsigned int drops = 0;
-
-			for (;;) {
-				HevRcastBuffer *drop;
-
-				if (self->buffers_r == self->buffers_w)
-					break;
-				drop = self->buffers[self->buffers_r];
-				if (HEV_RCAST_MESSAGE_KEY_FRAME == hev_rcast_buffer_get_type (drop)) {
-					if (drops > 0)
-						break;
-				}
-
-				hev_rcast_buffer_unref (drop);
-				self->buffers_r = (self->buffers_r + 1) % BUFFERS_COUNT;
-				drops ++;
-			}
-		}
-		self->buffers_w = next_w;
+		/* dispatch frames */
+		if (self->buffer)
+			hev_rcast_buffer_unref (self->buffer);
+		self->buffer = buffer;
 
 		self->base.hp = HEV_RCAST_BASE_SESSION_HP;
 
