@@ -113,14 +113,14 @@ hev_rcast_input_session_get_buffer (HevRcastInputSession *self, int cfg)
 	return buffer;
 }
 
-void
+int
 hev_rcast_input_session_rsync (HevRcastInputSession *self)
 {
 	HevRcastMessage msg;
 
 	msg.type = HEV_RCAST_MESSAGE_RSYNC;
 
-	send (self->base.fd, &msg, sizeof (msg.type), 0);
+	return send (self->base.fd, &msg, sizeof (msg.type), 0);
 }
 
 static int
