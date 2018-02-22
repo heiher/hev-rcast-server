@@ -23,7 +23,7 @@ void hev_rcast_output_session_unref (HevRcastOutputSession *self);
 
 void hev_rcast_output_session_run (HevRcastOutputSession *self);
 
-int hev_rcast_output_session_push_buffer (HevRcastOutputSession *self,
+void hev_rcast_output_session_push_buffer (HevRcastOutputSession *self,
 			HevRcastBuffer *buffer);
 
 #endif /* __HEV_RCAST_OUTPUT_SESSION_H__ */

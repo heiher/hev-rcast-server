@@ -103,25 +103,18 @@ hev_rcast_output_session_run (HevRcastOutputSession *self)
 	hev_task_run (self->base.task, hev_rcast_task_entry, self);
 }
 
-int
+void
 hev_rcast_output_session_push_buffer (HevRcastOutputSession *self,
 			HevRcastBuffer *buffer)
 {
-	int retval = 0;
 	unsigned int next_w;
 
 	next_w = (self->buffers_w + 1) % self->buffers_count;
 	if (self->buffers_r == next_w) {
-		retval = 1;
 		self->skip_ref_buffer = 1;
-
-		for (;;) {
-			if (self->buffers_r == self->buffers_w)
-				break;
-
-			hev_rcast_buffer_unref (self->buffers[self->buffers_r]);
-			self->buffers_r = (self->buffers_r + 1) % self->buffers_count;
-		}
+		hev_rcast_buffer_unref (buffer);
+		hev_rcast_base_session_quit (&self->base);
+		return;
 	}
 
 	if (self->skip_ref_buffer) {
@@ -131,7 +124,7 @@ hev_rcast_output_session_push_buffer (HevRcastOutputSession *self,
 		switch (type) {
 		case HEV_RCAST_MESSAGE_REF_FRAME:
 			hev_rcast_buffer_unref (buffer);
-			return retval;
+			return;
 		case HEV_RCAST_MESSAGE_KEY_FRAME:
 			self->skip_ref_buffer = 0;
 		}
@@ -141,8 +134,6 @@ hev_rcast_output_session_push_buffer (HevRcastOutputSession *self,
 	self->buffers_w = next_w;
 
 	hev_task_wakeup (self->base.task);
-
-	return retval;
 }
 
 static int
