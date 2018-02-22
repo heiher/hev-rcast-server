@@ -426,7 +426,7 @@ temp_session_notify_handler (HevRcastBaseSession *session,
 				hev_rcast_base_session_quit (self->input_session);
 			self->input_session = (HevRcastBaseSession *) s;
 			hev_rcast_input_session_run (s);
-			hev_task_wakeup (self->task_rsync_manager);
+			rsync_manager_request_rsync (self);
 		} else {
 			close (session->fd);
 		}
