@@ -302,6 +302,10 @@ hev_rcast_task_session_manager_entry (void *data)
 
 		/* input session */
 		if (self->input_session) {
+#ifdef _DEBUG
+			printf ("Input session %p's hp %d\n", self->input_session,
+						self->input_session->hp);
+#endif
 			self->input_session->hp --;
 			if (self->input_session->hp == 0)
 				hev_rcast_base_session_quit (self->input_session);
@@ -415,6 +419,9 @@ temp_session_notify_handler (HevRcastBaseSession *session,
 
 		s = hev_rcast_input_session_new (session->fd, input_session_notify_handler, self);
 		if (s) {
+#ifdef _DEBUG
+			printf ("Set input session: %p\n", s);
+#endif
 			if (self->input_session)
 				hev_rcast_base_session_quit (self->input_session);
 			self->input_session = (HevRcastBaseSession *) s;
@@ -468,6 +475,9 @@ input_session_notify_handler (HevRcastBaseSession *session,
 		hev_rcast_dispatch_buffer (self);
 		break;
 	default:
+#ifdef _DEBUG
+		printf ("Remove input session: %p\n", session);
+#endif
 		if (self->input_session == session)
 			self->input_session = NULL;
 		hev_rcast_input_session_unref ((HevRcastInputSession *) session);
