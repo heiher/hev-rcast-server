@@ -186,7 +186,7 @@ retry_alloc:
 			hev_rcast_buffer_unref (self->buffer);
 		self->buffer = buffer;
 
-		self->base.hp = HEV_RCAST_BASE_SESSION_HP;
+		hev_rcast_base_session_reset_hp (&self->base);
 
 		action = HEV_RCAST_BASE_SESSION_NOTIFY_DISPATCH;
 		self->notify ((HevRcastBaseSession *) self, action, self->notify_data);
