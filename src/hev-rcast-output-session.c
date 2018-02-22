@@ -203,7 +203,7 @@ hev_rcast_task_entry (void *data)
 
 		hev_rcast_buffer_unref (buffer);
 
-		self->base.hp = HEV_RCAST_BASE_SESSION_HP;
+		hev_rcast_base_session_reset_hp (&self->base);
 	}
 
 notify:
