@@ -358,8 +358,7 @@ hev_rcast_dispatch_buffer (HevRcastServer *self)
 		HevRcastOutputSession *s = (HevRcastOutputSession *) session;
 
 		hev_rcast_buffer_ref (buffer);
-		if (hev_rcast_output_session_push_buffer (s, buffer))
-			rsync_manager_request_rsync (self);
+		hev_rcast_output_session_push_buffer (s, buffer);
 	}
 
 	hev_rcast_buffer_unref (buffer);
