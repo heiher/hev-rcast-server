@@ -39,6 +39,7 @@ struct _HevRcastBaseSession
 };
 
 void hev_rcast_base_session_quit (HevRcastBaseSession *self);
+void hev_rcast_base_session_reset_hp (HevRcastBaseSession *self);
 
 #endif /* __HEV_RCAST_BASE_SESSION_H__ */
 
