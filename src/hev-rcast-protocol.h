@@ -41,7 +41,7 @@ enum _HevRcastMessageFrameType
 
 struct _HevRcastMessageLogin
 {
-	unsigned char direction;
+	unsigned char type;
 } __attribute__((packed));
 
 struct _HevRcastMessageFrame
