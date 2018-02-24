@@ -38,6 +38,7 @@ struct _HevRcastServer
 	int fd;
 	int quit;
 	int rsync;
+	int skip_ref_buffer;
 
 	HevRcastBaseSession *input_session;
 	HevRcastBaseSession *output_sessions;
@@ -362,6 +363,17 @@ hev_rcast_dispatch_buffer (HevRcastServer *self)
 		}
 	}
 
+	if (self->skip_ref_buffer) {
+		switch (hev_rcast_buffer_get_type (buffer)) {
+		case HEV_RCAST_MESSAGE_KEY_FRAME:
+			self->skip_ref_buffer = 0;
+			break;
+		case HEV_RCAST_MESSAGE_REF_FRAME:
+			hev_rcast_buffer_unref (buffer);
+			return;
+		}
+	}
+
 	for (session=self->output_sessions; session; session=session->next) {
 		HevRcastOutputSession *s = (HevRcastOutputSession *) session;
 
@@ -429,6 +441,7 @@ temp_session_notify_handler (HevRcastBaseSession *session,
 			if (self->input_session)
 				hev_rcast_base_session_quit (self->input_session);
 			self->input_session = (HevRcastBaseSession *) s;
+			self->skip_ref_buffer = 1;
 			hev_rcast_input_session_run (s);
 			rsync_manager_request_rsync (self);
 		} else {
