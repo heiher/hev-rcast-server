@@ -13,6 +13,7 @@
 typedef struct _HevRcastMessage HevRcastMessage;
 typedef struct _HevRcastMessageLogin HevRcastMessageLogin;
 typedef struct _HevRcastMessageFrame HevRcastMessageFrame;
+typedef struct _HevRcastMessageControl HevRcastMessageControl;
 
 typedef enum _HevRcastMessageType HevRcastMessageType;
 typedef enum _HevRcastMessageLoginDirection HevRcastMessageLoginDirection;
@@ -23,12 +24,14 @@ enum _HevRcastMessageType
 	HEV_RCAST_MESSAGE_LOGIN = 0,
 	HEV_RCAST_MESSAGE_FRAME,
 	HEV_RCAST_MESSAGE_RSYNC,
+	HEV_RCAST_MESSAGE_CONTROL,
 };
 
 enum _HevRcastMessageLoginDirection
 {
 	HEV_RCAST_MESSAGE_LOGIN_INPUT = 0,
 	HEV_RCAST_MESSAGE_LOGIN_OUTPUT,
+	HEV_RCAST_MESSAGE_LOGIN_CONTROL,
 };
 
 enum _HevRcastMessageFrameType
@@ -50,6 +53,12 @@ struct _HevRcastMessageFrame
 	unsigned int length;
 } __attribute__((packed));
 
+struct _HevRcastMessageControl
+{
+	unsigned int length;
+	char command[0];
+} __attribute__((packed));
+
 struct _HevRcastMessage
 {
 	unsigned char type;
@@ -57,6 +66,7 @@ struct _HevRcastMessage
 	union {
 		HevRcastMessageLogin login;
 		HevRcastMessageFrame frame;
+		HevRcastMessageControl control;
 	};
 } __attribute__((packed));
 
