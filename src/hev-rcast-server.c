@@ -42,6 +42,9 @@ struct _HevRcastServer
 	int rsync;
 	int skip_ref_buffer;
 
+	HevRcastBuffer *control_buffer;
+	HevRcastBuffer *control_buffer_cfg;
+
 	HevRcastBaseSession *input_session;
 	HevRcastBaseSession *output_sessions;
 	HevRcastBaseSession *control_sessions;
@@ -53,6 +56,8 @@ static void hev_rcast_task_listen_entry (void *data);
 static void hev_rcast_task_rsync_manager_entry (void *data);
 static void hev_rcast_task_session_manager_entry (void *data);
 static void hev_rcast_dispatch_buffer (HevRcastServer *self);
+static void hev_rcast_dispatch_control_buffer (HevRcastServer *self,
+			HevRcastHttpSession *http_session);
 static void rsync_manager_request_rsync (HevRcastServer *self);
 static void session_manager_insert_session (HevRcastBaseSession **list,
 			HevRcastBaseSession *session);
@@ -163,6 +168,12 @@ void hev_rcast_server_destroy (HevRcastServer *self)
 	hev_task_unref (self->task_listen);
 	hev_task_unref (self->task_rsync_manager);
 	hev_task_unref (self->task_session_manager);
+
+	if (self->control_buffer)
+		hev_rcast_buffer_unref (self->control_buffer);
+
+	if (self->control_buffer_cfg)
+		hev_rcast_buffer_unref (self->control_buffer_cfg);
 
 	close (self->fd);
 	hev_free (self);
@@ -434,6 +445,37 @@ hev_rcast_dispatch_buffer (HevRcastServer *self)
 }
 
 static void
+hev_rcast_dispatch_control_buffer (HevRcastServer *self,
+			HevRcastHttpSession *http_session)
+{
+	HevRcastBuffer *buffer;
+	HevRcastBaseSession *session;
+
+	buffer = hev_rcast_http_session_get_buffer (http_session);
+
+	switch (hev_rcast_buffer_get_type (buffer)) {
+	case 1:
+		if (self->control_buffer_cfg)
+			hev_rcast_buffer_unref (self->control_buffer_cfg);
+		self->control_buffer_cfg = hev_rcast_buffer_ref (buffer);
+		break;
+	default:
+		if (self->control_buffer)
+			hev_rcast_buffer_unref (self->control_buffer);
+		self->control_buffer = hev_rcast_buffer_ref (buffer);
+	}
+
+	for (session=self->control_sessions; session; session=session->next) {
+		HevRcastControlSession *s = (HevRcastControlSession *) session;
+
+		hev_rcast_buffer_ref (buffer);
+		hev_rcast_control_session_push_buffer (s, buffer);
+	}
+
+	hev_rcast_buffer_unref (buffer);
+}
+
+static void
 rsync_manager_request_rsync (HevRcastServer *self)
 {
 	self->rsync = 1;
@@ -602,7 +644,13 @@ http_session_notify_handler (HevRcastBaseSession *session,
 {
 	HevRcastServer *self = data;
 
-	session_manager_remove_session (&self->http_sessions, session);
-	hev_rcast_http_session_unref ((HevRcastHttpSession *) session);
+	switch (action) {
+	case HEV_RCAST_BASE_SESSION_NOTIFY_DISPATCH:
+		hev_rcast_dispatch_control_buffer (self, (HevRcastHttpSession *) session);
+		break;
+	default:
+		session_manager_remove_session (&self->http_sessions, session);
+		hev_rcast_http_session_unref ((HevRcastHttpSession *) session);
+	}
 }
 
