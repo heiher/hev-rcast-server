@@ -8,6 +8,7 @@
  */
 
 #include <stdio.h>
+#include <errno.h>
 #include <unistd.h>
 #include <arpa/inet.h>
 
@@ -137,6 +138,27 @@ hev_rcast_output_session_push_buffer (HevRcastOutputSession *self,
 }
 
 static int
+task_io_recv (HevRcastOutputSession *self)
+{
+	unsigned char buf[16];
+	ssize_t len;
+
+	len = recv (self->base.fd, buf, 16, 0);
+	switch (len) {
+	case -1:
+		if (EAGAIN != errno)
+			return -1;
+		break;
+	case 0:
+		return -1;
+	default:
+		hev_rcast_base_session_reset_hp (&self->base);
+	}
+
+	return 0;
+}
+
+static int
 task_io_yielder (HevTaskYieldType type, void *data)
 {
 	HevRcastOutputSession *self = data;
@@ -156,7 +178,7 @@ hev_rcast_task_entry (void *data)
 	ssize_t len;
 	HevRcastBaseSessionNotifyAction action;
 
-	hev_task_add_fd (task, self->base.fd, EPOLLOUT);
+	hev_task_add_fd (task, self->base.fd, EPOLLIN | EPOLLOUT);
 
 	for (;;) {
 		HevRcastBuffer *buffer;
@@ -165,6 +187,8 @@ hev_rcast_task_entry (void *data)
 
 		if (self->buffers_r == self->buffers_w) {
 			hev_task_yield (HEV_TASK_WAITIO);
+			if (0 > task_io_recv (self))
+				break;
 			if (self->base.hp == 0)
 				break;
 			continue;
