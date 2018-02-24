@@ -355,8 +355,12 @@ hev_rcast_dispatch_buffer (HevRcastServer *self)
 	input_session = (HevRcastInputSession *) self->input_session;
 	buffer = hev_rcast_input_session_get_buffer (input_session, 0);
 
-	if (HEV_RCAST_MESSAGE_KEY_FRAME == hev_rcast_buffer_get_type (buffer))
-		self->rsync = 0;
+	if (self->rsync) {
+		switch (hev_rcast_buffer_get_type (buffer)) {
+		case HEV_RCAST_MESSAGE_KEY_FRAME:
+			self->rsync = 0;
+		}
+	}
 
 	for (session=self->output_sessions; session; session=session->next) {
 		HevRcastOutputSession *s = (HevRcastOutputSession *) session;
