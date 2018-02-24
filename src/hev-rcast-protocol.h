@@ -16,7 +16,7 @@ typedef struct _HevRcastMessageFrame HevRcastMessageFrame;
 typedef struct _HevRcastMessageControl HevRcastMessageControl;
 
 typedef enum _HevRcastMessageType HevRcastMessageType;
-typedef enum _HevRcastMessageLoginDirection HevRcastMessageLoginDirection;
+typedef enum _HevRcastMessageLoginType HevRcastMessageLoginType;
 typedef enum _HevRcastMessageFrameType HevRcastMessageFrameType;
 
 enum _HevRcastMessageType
@@ -27,7 +27,7 @@ enum _HevRcastMessageType
 	HEV_RCAST_MESSAGE_CONTROL,
 };
 
-enum _HevRcastMessageLoginDirection
+enum _HevRcastMessageLoginType
 {
 	HEV_RCAST_MESSAGE_LOGIN_INPUT = 0,
 	HEV_RCAST_MESSAGE_LOGIN_OUTPUT,
