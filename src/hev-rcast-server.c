@@ -571,6 +571,18 @@ temp_session_notify_handler (HevRcastBaseSession *session,
 		if (s) {
 			session_manager_insert_session (&self->control_sessions, (HevRcastBaseSession *) s);
 			hev_rcast_control_session_run (s);
+			if (self->control_buffer_cfg) {
+				HevRcastBuffer *buffer;
+
+				buffer = hev_rcast_buffer_ref (self->control_buffer_cfg);
+				hev_rcast_control_session_push_buffer (s, buffer);
+			}
+			if (self->control_buffer) {
+				HevRcastBuffer *buffer;
+
+				buffer = hev_rcast_buffer_ref (self->control_buffer);
+				hev_rcast_control_session_push_buffer (s, buffer);
+			}
 		} else {
 			close (session->fd);
 		}
