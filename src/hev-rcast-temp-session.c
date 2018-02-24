@@ -124,6 +124,9 @@ hev_rcast_task_entry (void *data)
 	case HEV_RCAST_MESSAGE_LOGIN_OUTPUT:
 		action = HEV_RCAST_BASE_SESSION_NOTIFY_TO_OUTPUT;
 		break;
+	case HEV_RCAST_MESSAGE_LOGIN_CONTROL:
+		action = HEV_RCAST_BASE_SESSION_NOTIFY_TO_CONTROL;
+		break;
 	default:
 		break;
 	}
