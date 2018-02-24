@@ -117,7 +117,7 @@ hev_rcast_task_entry (void *data)
 
 	hev_task_del_fd (task, self->base.fd);
 
-	switch (msg.login.direction) {
+	switch (msg.login.type) {
 	case HEV_RCAST_MESSAGE_LOGIN_INPUT:
 		action = HEV_RCAST_BASE_SESSION_NOTIFY_TO_INPUT;
 		break;
