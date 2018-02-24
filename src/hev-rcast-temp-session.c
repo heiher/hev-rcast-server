@@ -100,6 +100,7 @@ hev_rcast_task_entry (void *data)
 	HevRcastTempSession *self = data;
 	HevTask *task = hev_task_self ();
 	HevRcastMessage msg;
+	char *http = (char *) &msg;
 	size_t msg_len;
 	ssize_t len;
 	HevRcastBaseSessionNotifyAction action;
@@ -111,7 +112,16 @@ hev_rcast_task_entry (void *data)
 	msg_len = sizeof (msg.type) + sizeof (HevRcastMessageLogin);
 	len = hev_task_io_socket_recv (self->base.fd, &msg, msg_len, MSG_WAITALL,
 				task_io_yielder, self);
-	if (len != msg_len || HEV_RCAST_MESSAGE_LOGIN != msg.type) {
+	if (len != msg_len) {
+		goto notify;
+	}
+
+	if (http[0] == 'G' && http[1] == 'E') {
+		msg.type = HEV_RCAST_MESSAGE_LOGIN;
+		msg.login.type = HEV_RCAST_MESSAGE_LOGIN_HTTP;
+	}
+
+	if (HEV_RCAST_MESSAGE_LOGIN != msg.type) {
 		goto notify;
 	}
 
@@ -126,6 +136,9 @@ hev_rcast_task_entry (void *data)
 		break;
 	case HEV_RCAST_MESSAGE_LOGIN_CONTROL:
 		action = HEV_RCAST_BASE_SESSION_NOTIFY_TO_CONTROL;
+		break;
+	case HEV_RCAST_MESSAGE_LOGIN_HTTP:
+		action = HEV_RCAST_BASE_SESSION_NOTIFY_TO_HTTP;
 		break;
 	default:
 		break;
