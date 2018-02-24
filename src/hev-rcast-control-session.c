@@ -122,9 +122,8 @@ hev_rcast_control_session_push_buffer (HevRcastControlSession *self,
 }
 
 static int
-task_io_yielder (HevTaskYieldType type, void *data)
+task_io_recv (HevRcastControlSession *self)
 {
-	HevRcastControlSession *self = data;
 	unsigned char buf[16];
 	ssize_t len;
 
@@ -139,6 +138,14 @@ task_io_yielder (HevTaskYieldType type, void *data)
 	default:
 		hev_rcast_base_session_reset_hp (&self->base);
 	}
+
+	return 0;
+}
+
+static int
+task_io_yielder (HevTaskYieldType type, void *data)
+{
+	HevRcastControlSession *self = data;
 
 	hev_task_yield (type);
 
@@ -164,6 +171,8 @@ hev_rcast_task_entry (void *data)
 
 		if (self->buffers_r == self->buffers_w) {
 			hev_task_yield (HEV_TASK_WAITIO);
+			if (0 > task_io_recv (self))
+				break;
 			if (self->base.hp == 0)
 				break;
 			continue;
