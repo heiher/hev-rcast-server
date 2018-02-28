@@ -126,6 +126,7 @@ task_io_recv (HevRcastControlSession *self)
 {
 	unsigned char buf[16];
 	ssize_t len;
+	HevRcastBuffer *buffer;
 
 	len = recv (self->base.fd, buf, 16, 0);
 	switch (len) {
@@ -136,7 +137,8 @@ task_io_recv (HevRcastControlSession *self)
 	case 0:
 		return -1;
 	default:
-		hev_rcast_base_session_reset_hp (&self->base);
+		buffer = hev_rcast_buffer_new (0, 0);
+		hev_rcast_control_session_push_buffer (self, buffer);
 	}
 
 	return 0;
@@ -193,10 +195,12 @@ hev_rcast_task_entry (void *data)
 			goto notify;
 		}
 
-		len = hev_task_io_socket_send (self->base.fd, data, data_len, MSG_WAITALL,
-					task_io_yielder, self);
-		if (len != data_len) {
-			goto notify;
+		if (data_len) {
+			len = hev_task_io_socket_send (self->base.fd, data, data_len,
+						MSG_WAITALL, task_io_yielder, self);
+			if (len != data_len) {
+				goto notify;
+			}
 		}
 
 		hev_rcast_buffer_unref (buffer);
