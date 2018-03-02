@@ -33,6 +33,8 @@ LOCAL_SRC_FILES := \
 	src/hev-main.c \
 	src/hev-rcast-base-session.c \
 	src/hev-rcast-buffer.c \
+	src/hev-rcast-control-session.c \
+	src/hev-rcast-http-session.c \
 	src/hev-rcast-input-session.c \
 	src/hev-rcast-output-session.c \
 	src/hev-rcast-protocol.c \
