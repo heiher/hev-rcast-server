@@ -120,7 +120,7 @@ hev_rcast_task_entry (void *data)
 	HevTask *task = hev_task_self ();
 	HevRcastBaseSessionNotifyAction action;
 	HevRcastBuffer *buffer;
-	char buf[1024], *http = NULL;
+	char buf[4096], *http = NULL;
 	size_t recv_len = 0, data_len;
 	ssize_t len;
 	unsigned int type = 0;
@@ -139,7 +139,7 @@ hev_rcast_task_entry (void *data)
 
 	for (;;) {
 		len = hev_task_io_socket_recv (self->base.fd, buf + recv_len,
-					1023 - recv_len, 0, task_io_yielder, self);
+					4095 - recv_len, 0, task_io_yielder, self);
 		if (0 >= len)
 			goto notify;
 		recv_len += len;
