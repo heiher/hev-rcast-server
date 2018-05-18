@@ -37,7 +37,7 @@ hev_config_init (const char *config_path)
 		iniparser_freedict (ini_dict);
 		return -2;
 	}
-	strncpy (listen_address, address, 16);
+	strncpy (listen_address, address, 16 - 1);
 
 	/* Main:Port */
 	port = iniparser_getint (ini_dict, "Main:Port", -1);
