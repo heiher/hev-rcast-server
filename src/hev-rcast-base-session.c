@@ -7,20 +7,18 @@
  ============================================================================
  */
 
-
 #include "hev-rcast-base-session.h"
 
 void
 hev_rcast_base_session_quit (HevRcastBaseSession *self)
 {
-	self->hp = 0;
-	hev_task_wakeup (self->task);
+    self->hp = 0;
+    hev_task_wakeup (self->task);
 }
 
 void
 hev_rcast_base_session_reset_hp (HevRcastBaseSession *self)
 {
-	if (self->hp)
-		self->hp = HEV_RCAST_BASE_SESSION_HP;
+    if (self->hp)
+        self->hp = HEV_RCAST_BASE_SESSION_HP;
 }
-
