@@ -10,18 +10,17 @@
 #ifndef __HEV_CONFIG_H__
 #define __HEV_CONFIG_H__
 
-#define MAJOR_VERSION		(1)
-#define MINOR_VERSION		(4)
-#define MICRO_VERSION		(2)
+#define MAJOR_VERSION (1)
+#define MINOR_VERSION (4)
+#define MICRO_VERSION (2)
 
 int hev_config_init (const char *config_path);
 void hev_config_fini (void);
 
-const char * hev_config_get_listen_address (void);
+const char *hev_config_get_listen_address (void);
 unsigned short hev_config_get_port (void);
 
 unsigned int hev_config_get_rcast_frame_buffers (void);
 unsigned int hev_config_get_rcast_rsync_interval (void);
 
 #endif /* __HEV_CONFIG_H__ */
-
