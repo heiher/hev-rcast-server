@@ -277,7 +277,7 @@ hev_rcast_task_listen_entry (void *data)
         }
 
         session =
-        hev_rcast_temp_session_new (fd, temp_session_notify_handler, self);
+            hev_rcast_temp_session_new (fd, temp_session_notify_handler, self);
         if (!session) {
             close (fd);
             continue;
@@ -586,7 +586,7 @@ temp_session_notify_handler (HevRcastBaseSession *session,
         HevRcastControlSession *s;
 
         s = hev_rcast_control_session_new (
-        session->fd, control_session_notify_handler, self);
+            session->fd, control_session_notify_handler, self);
         if (s) {
             session_manager_insert_session (&self->control_sessions,
                                             (HevRcastBaseSession *)s);
