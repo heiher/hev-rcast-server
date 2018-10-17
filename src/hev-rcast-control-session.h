@@ -15,16 +15,17 @@
 
 typedef struct _HevRcastControlSession HevRcastControlSession;
 
-HevRcastControlSession * hev_rcast_control_session_new (int fd,
-			HevRcastBaseSessionNotify notify, void *data);
+HevRcastControlSession *
+hev_rcast_control_session_new (int fd, HevRcastBaseSessionNotify notify,
+                               void *data);
 
-HevRcastControlSession * hev_rcast_control_session_ref (HevRcastControlSession *self);
+HevRcastControlSession *
+hev_rcast_control_session_ref (HevRcastControlSession *self);
 void hev_rcast_control_session_unref (HevRcastControlSession *self);
 
 void hev_rcast_control_session_run (HevRcastControlSession *self);
 
 void hev_rcast_control_session_push_buffer (HevRcastControlSession *self,
-			HevRcastBuffer *buffer);
+                                            HevRcastBuffer *buffer);
 
 #endif /* __HEV_RCAST_CONTROL_SESSION_H__ */
-
