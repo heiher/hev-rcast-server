@@ -14,13 +14,13 @@
 
 typedef struct _HevRcastTempSession HevRcastTempSession;
 
-HevRcastTempSession * hev_rcast_temp_session_new (int fd,
-			HevRcastBaseSessionNotify notify, void *data);
+HevRcastTempSession *
+hev_rcast_temp_session_new (int fd, HevRcastBaseSessionNotify notify,
+                            void *data);
 
-HevRcastTempSession * hev_rcast_temp_session_ref (HevRcastTempSession *self);
+HevRcastTempSession *hev_rcast_temp_session_ref (HevRcastTempSession *self);
 void hev_rcast_temp_session_unref (HevRcastTempSession *self);
 
 void hev_rcast_temp_session_run (HevRcastTempSession *self);
 
 #endif /* __HEV_RCAST_TEMP_SESSION_H__ */
-
