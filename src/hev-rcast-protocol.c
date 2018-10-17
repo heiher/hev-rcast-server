@@ -8,4 +8,3 @@
  */
 
 #include "hev-rcast-protocol.h"
-

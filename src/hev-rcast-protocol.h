@@ -21,55 +21,55 @@ typedef enum _HevRcastMessageFrameType HevRcastMessageFrameType;
 
 enum _HevRcastMessageType
 {
-	HEV_RCAST_MESSAGE_LOGIN = 0,
-	HEV_RCAST_MESSAGE_FRAME,
-	HEV_RCAST_MESSAGE_RSYNC,
-	HEV_RCAST_MESSAGE_CONTROL,
+    HEV_RCAST_MESSAGE_LOGIN = 0,
+    HEV_RCAST_MESSAGE_FRAME,
+    HEV_RCAST_MESSAGE_RSYNC,
+    HEV_RCAST_MESSAGE_CONTROL,
 };
 
 enum _HevRcastMessageLoginType
 {
-	HEV_RCAST_MESSAGE_LOGIN_INPUT = 0,
-	HEV_RCAST_MESSAGE_LOGIN_OUTPUT,
-	HEV_RCAST_MESSAGE_LOGIN_CONTROL,
-	HEV_RCAST_MESSAGE_LOGIN_HTTP,
+    HEV_RCAST_MESSAGE_LOGIN_INPUT = 0,
+    HEV_RCAST_MESSAGE_LOGIN_OUTPUT,
+    HEV_RCAST_MESSAGE_LOGIN_CONTROL,
+    HEV_RCAST_MESSAGE_LOGIN_HTTP,
 };
 
 enum _HevRcastMessageFrameType
 {
-	HEV_RCAST_MESSAGE_CFG_FRAME = 0,
-	HEV_RCAST_MESSAGE_KEY_FRAME,
-	HEV_RCAST_MESSAGE_REF_FRAME,
-	HEV_RCAST_MESSAGE_KAL_FRAME,
+    HEV_RCAST_MESSAGE_CFG_FRAME = 0,
+    HEV_RCAST_MESSAGE_KEY_FRAME,
+    HEV_RCAST_MESSAGE_REF_FRAME,
+    HEV_RCAST_MESSAGE_KAL_FRAME,
 };
 
 struct _HevRcastMessageLogin
 {
-	unsigned char type;
-} __attribute__((packed));
+    unsigned char type;
+} __attribute__ ((packed));
 
 struct _HevRcastMessageFrame
 {
-	unsigned char type;
-	unsigned int length;
-} __attribute__((packed));
+    unsigned char type;
+    unsigned int length;
+} __attribute__ ((packed));
 
 struct _HevRcastMessageControl
 {
-	unsigned int length;
-	char command[0];
-} __attribute__((packed));
+    unsigned int length;
+    char command[0];
+} __attribute__ ((packed));
 
 struct _HevRcastMessage
 {
-	unsigned char type;
+    unsigned char type;
 
-	union {
-		HevRcastMessageLogin login;
-		HevRcastMessageFrame frame;
-		HevRcastMessageControl control;
-	};
-} __attribute__((packed));
+    union
+    {
+        HevRcastMessageLogin login;
+        HevRcastMessageFrame frame;
+        HevRcastMessageControl control;
+    };
+} __attribute__ ((packed));
 
 #endif /* __HEV_RCAST_PROTOCOL_H__ */
-
