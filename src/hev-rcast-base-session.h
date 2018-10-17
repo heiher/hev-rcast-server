@@ -17,7 +17,8 @@
 typedef struct _HevRcastBaseSession HevRcastBaseSession;
 typedef enum _HevRcastBaseSessionNotifyAction HevRcastBaseSessionNotifyAction;
 typedef void (*HevRcastBaseSessionNotify) (
-HevRcastBaseSession *self, HevRcastBaseSessionNotifyAction action, void *data);
+    HevRcastBaseSession *self, HevRcastBaseSessionNotifyAction action,
+    void *data);
 
 enum _HevRcastBaseSessionNotifyAction
 {

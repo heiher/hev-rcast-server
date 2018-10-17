@@ -125,12 +125,12 @@ hev_rcast_task_entry (void *data)
     ssize_t len;
     unsigned int type = 0;
     static const char *http_response =
-    "HTTP/1.1 200 OK\r\n"
-    "Access-Control-Allow-Origin: *\r\n"
-    "Access-Control-Allow-Methods: GET\r\n"
-    "Content-Type: application/json; charset=utf-8\r\n"
-    "Content-Length: 20\r\n\r\n"
-    "{ \"result\": \"succ\" }";
+        "HTTP/1.1 200 OK\r\n"
+        "Access-Control-Allow-Origin: *\r\n"
+        "Access-Control-Allow-Methods: GET\r\n"
+        "Content-Type: application/json; charset=utf-8\r\n"
+        "Content-Length: 20\r\n\r\n"
+        "{ \"result\": \"succ\" }";
     static size_t http_response_length = 0;
 
     if (!http_response_length)
