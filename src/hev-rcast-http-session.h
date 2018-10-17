@@ -15,15 +15,15 @@
 
 typedef struct _HevRcastHttpSession HevRcastHttpSession;
 
-HevRcastHttpSession * hev_rcast_http_session_new (int fd,
-			HevRcastBaseSessionNotify notify, void *data);
+HevRcastHttpSession *
+hev_rcast_http_session_new (int fd, HevRcastBaseSessionNotify notify,
+                            void *data);
 
-HevRcastHttpSession * hev_rcast_http_session_ref (HevRcastHttpSession *self);
+HevRcastHttpSession *hev_rcast_http_session_ref (HevRcastHttpSession *self);
 void hev_rcast_http_session_unref (HevRcastHttpSession *self);
 
 void hev_rcast_http_session_run (HevRcastHttpSession *self);
 
-HevRcastBuffer * hev_rcast_http_session_get_buffer (HevRcastHttpSession *self);
+HevRcastBuffer *hev_rcast_http_session_get_buffer (HevRcastHttpSession *self);
 
 #endif /* __HEV_RCAST_HTTP_SESSION_H__ */
-
