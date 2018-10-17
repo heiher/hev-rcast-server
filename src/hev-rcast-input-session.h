@@ -15,17 +15,18 @@
 
 typedef struct _HevRcastInputSession HevRcastInputSession;
 
-HevRcastInputSession * hev_rcast_input_session_new (int fd,
-			HevRcastBaseSessionNotify notify, void *data);
+HevRcastInputSession *
+hev_rcast_input_session_new (int fd, HevRcastBaseSessionNotify notify,
+                             void *data);
 
-HevRcastInputSession * hev_rcast_input_session_ref (HevRcastInputSession *self);
+HevRcastInputSession *hev_rcast_input_session_ref (HevRcastInputSession *self);
 void hev_rcast_input_session_unref (HevRcastInputSession *self);
 
 void hev_rcast_input_session_run (HevRcastInputSession *self);
 
-HevRcastBuffer * hev_rcast_input_session_get_buffer (HevRcastInputSession *self, int cfg);
+HevRcastBuffer *hev_rcast_input_session_get_buffer (HevRcastInputSession *self,
+                                                    int cfg);
 
 int hev_rcast_input_session_rsync (HevRcastInputSession *self);
 
 #endif /* __HEV_RCAST_INPUT_SESSION_H__ */
-
