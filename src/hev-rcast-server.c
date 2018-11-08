@@ -16,6 +16,7 @@
 #include <arpa/inet.h>
 
 #include <hev-task.h>
+#include <hev-task-io.h>
 #include <hev-task-io-socket.h>
 #include <hev-memory-allocator.h>
 
