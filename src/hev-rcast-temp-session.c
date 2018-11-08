@@ -8,12 +8,14 @@
  */
 
 #include <stdio.h>
+#include <sys/socket.h>
 
 #include "hev-rcast-temp-session.h"
 #include "hev-rcast-protocol.h"
 #include "hev-rcast-server.h"
 
 #include <hev-task.h>
+#include <hev-task-io.h>
 #include <hev-task-io-socket.h>
 #include <hev-memory-allocator.h>
 
