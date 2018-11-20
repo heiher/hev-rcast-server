@@ -89,7 +89,7 @@ hev_rcast_server_new (void)
 {
     HevRcastServer *self;
     struct sockaddr_in addr;
-    int ret, nonblock = 1, reuseaddr = 1;
+    int ret, reuseaddr = 1;
 
     self = hev_malloc0 (sizeof (HevRcastServer));
     if (!self) {
@@ -97,7 +97,7 @@ hev_rcast_server_new (void)
         return NULL;
     }
 
-    self->fd = socket (AF_INET, SOCK_STREAM, 0);
+    self->fd = hev_task_io_socket_socket (AF_INET, SOCK_STREAM, 0);
     if (self->fd == -1) {
         fprintf (stderr, "Create socket failed!\n");
         hev_free (self);
@@ -108,13 +108,6 @@ hev_rcast_server_new (void)
                       sizeof (reuseaddr));
     if (ret == -1) {
         fprintf (stderr, "Set reuse address failed!\n");
-        close (self->fd);
-        hev_free (self);
-        return NULL;
-    }
-    ret = ioctl (self->fd, FIONBIO, (char *)&nonblock);
-    if (ret == -1) {
-        fprintf (stderr, "Set non-blocking failed!\n");
         close (self->fd);
         hev_free (self);
         return NULL;
@@ -251,7 +244,7 @@ hev_rcast_task_listen_entry (void *data)
     hev_task_add_fd (task, self->fd, EPOLLIN);
 
     for (;;) {
-        int fd, ret, nonblock = 1;
+        int fd;
         struct sockaddr_in addr;
         struct sockaddr *in_addr = (struct sockaddr *)&addr;
         socklen_t addr_len = sizeof (addr);
@@ -270,12 +263,6 @@ hev_rcast_task_listen_entry (void *data)
         printf ("Worker %p: New client %d enter from %s:%u\n", self, fd,
                 inet_ntoa (addr.sin_addr), ntohs (addr.sin_port));
 #endif
-
-        ret = ioctl (fd, FIONBIO, (char *)&nonblock);
-        if (ret == -1) {
-            fprintf (stderr, "Set non-blocking failed!\n");
-            close (fd);
-        }
 
         session =
             hev_rcast_temp_session_new (fd, temp_session_notify_handler, self);
