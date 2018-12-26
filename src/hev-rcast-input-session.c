@@ -143,7 +143,7 @@ hev_rcast_task_entry (void *data)
     ssize_t len;
     HevRcastBaseSessionNotifyAction action;
 
-    hev_task_add_fd (task, self->base.fd, EPOLLIN);
+    hev_task_add_fd (task, self->base.fd, POLLIN);
 
     for (;;) {
         HevRcastBuffer *buffer;
