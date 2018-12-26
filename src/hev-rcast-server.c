@@ -241,7 +241,7 @@ hev_rcast_task_listen_entry (void *data)
     HevRcastServer *self = data;
     HevTask *task = hev_task_self ();
 
-    hev_task_add_fd (task, self->fd, EPOLLIN);
+    hev_task_add_fd (task, self->fd, POLLIN);
 
     for (;;) {
         int fd;
