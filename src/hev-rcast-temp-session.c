@@ -109,7 +109,7 @@ hev_rcast_task_entry (void *data)
 
     action = HEV_RCAST_BASE_SESSION_NOTIFY_FREE;
 
-    hev_task_add_fd (task, self->base.fd, EPOLLIN);
+    hev_task_add_fd (task, self->base.fd, POLLIN);
 
     msg_len = sizeof (msg.type) + sizeof (HevRcastMessageLogin);
     len = hev_task_io_socket_recv (self->base.fd, &msg, msg_len, MSG_WAITALL,
