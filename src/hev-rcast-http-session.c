@@ -137,7 +137,7 @@ hev_rcast_task_entry (void *data)
     if (!http_response_length)
         http_response_length = strlen (http_response);
 
-    hev_task_add_fd (task, self->base.fd, EPOLLIN | EPOLLOUT);
+    hev_task_add_fd (task, self->base.fd, POLLIN | POLLOUT);
 
     for (;;) {
         len = hev_task_io_socket_recv (self->base.fd, buf + recv_len,
