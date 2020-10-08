@@ -10,6 +10,8 @@
 #ifndef __HEV_RCAST_PROTOCOL_H__
 #define __HEV_RCAST_PROTOCOL_H__
 
+#include <stdint.h>
+
 typedef struct _HevRcastMessage HevRcastMessage;
 typedef struct _HevRcastMessageLogin HevRcastMessageLogin;
 typedef struct _HevRcastMessageFrame HevRcastMessageFrame;
@@ -45,24 +47,25 @@ enum _HevRcastMessageFrameType
 
 struct _HevRcastMessageLogin
 {
-    unsigned char type;
+    uint8_t type;
 } __attribute__ ((packed));
 
 struct _HevRcastMessageFrame
 {
-    unsigned char type;
-    unsigned int length;
+    uint8_t type;
+    uint32_t length;
+    uint64_t pts;
 } __attribute__ ((packed));
 
 struct _HevRcastMessageControl
 {
-    unsigned int length;
+    uint32_t length;
     char command[0];
 } __attribute__ ((packed));
 
 struct _HevRcastMessage
 {
-    unsigned char type;
+    uint8_t type;
 
     union
     {
